@@ -10,9 +10,9 @@
 require_once __DIR__ . '/admin.php';
 require_once __DIR__ . '/includes/credits.php';
 
-$title = __( 'Credits' );
+$title = __('Credits');
 
-list( $display_version ) = explode( '-', get_bloginfo( 'version' ) );
+list($display_version) = explode('-', get_bloginfo('version'));
 
 require_once ABSPATH . 'wp-admin/admin-header.php';
 
@@ -24,7 +24,7 @@ $credits = wp_credits();
 		<div class="about__header-title">
 			<h1>
 				<span><?php echo $display_version; ?></span>
-				<?php _e( 'WordPress' ); ?>
+				<?php _e('WordPress'); ?>
 			</h1>
 		</div>
 
@@ -33,44 +33,44 @@ $credits = wp_credits();
 		<div class="about__header-text">
 			<p>
 				<?php
-				printf(
-					/* translators: %s: The current WordPress version number. */
-					__( 'Introducing our most refined user experience with the improved block editor in WordPress %s!' ),
-					$display_version
-				);
-				?>
+                printf(
+                    /* translators: %s: The current WordPress version number. */
+                    __('Introducing our most refined user experience with the improved block editor in WordPress %s!'),
+    $display_version
+                );
+                ?>
 			</p>
 		</div>
 
-		<nav class="about__header-navigation nav-tab-wrapper wp-clearfix" aria-label="<?php esc_attr_e( 'Secondary menu' ); ?>">
-			<a href="about.php" class="nav-tab"><?php _e( 'What&#8217;s New' ); ?></a>
-			<a href="credits.php" class="nav-tab nav-tab-active" aria-current="page"><?php _e( 'Credits' ); ?></a>
-			<a href="freedoms.php" class="nav-tab"><?php _e( 'Freedoms' ); ?></a>
-			<a href="privacy.php" class="nav-tab"><?php _e( 'Privacy' ); ?></a>
+		<nav class="about__header-navigation nav-tab-wrapper wp-clearfix" aria-label="<?php esc_attr_e('Secondary menu'); ?>">
+			<a href="about.php" class="nav-tab"><?php _e('What&#8217;s New'); ?></a>
+			<a href="credits.php" class="nav-tab nav-tab-active" aria-current="page"><?php _e('Credits'); ?></a>
+			<a href="freedoms.php" class="nav-tab"><?php _e('Freedoms'); ?></a>
+			<a href="privacy.php" class="nav-tab"><?php _e('Privacy'); ?></a>
 		</nav>
 	</div>
 
 	<div class="about__section">
 		<div class="column">
-			<h2><?php _e( 'WordPress is created by a worldwide team of passionate individuals.' ); ?></h2>
+			<h2><?php _e('WordPress is created by a worldwide team of passionate individuals.'); ?></h2>
 
 			<p>
 				<?php
-				if ( ! $credits ) {
-					printf(
-						/* translators: 1: https://wordpress.org/about/, 2: https://make.wordpress.org/ */
-						__( 'WordPress is created by a <a href="%1$s">worldwide team</a> of passionate individuals. <a href="%2$s">Get involved in WordPress</a>.' ),
-						__( 'https://wordpress.org/about/' ),
-						__( 'https://make.wordpress.org/' )
-					);
-				} else {
-					printf(
-						/* translators: %s: https://make.wordpress.org/ */
-						__( 'Want to see your name in lights on this page? <a href="%s">Get involved in WordPress</a>.' ),
-						__( 'https://make.wordpress.org/' )
-					);
-				}
-				?>
+                if (! $credits) {
+                    printf(
+                        /* translators: 1: https://wordpress.org/about/, 2: https://make.wordpress.org/ */
+                        __('WordPress is created by a <a href="%1$s">worldwide team</a> of passionate individuals. <a href="%2$s">Get involved in WordPress</a>.'),
+                        __('https://wordpress.org/about/'),
+                        __('https://make.wordpress.org/')
+                    );
+                } else {
+                    printf(
+                        /* translators: %s: https://make.wordpress.org/ */
+                        __('Want to see your name in lights on this page? <a href="%s">Get involved in WordPress</a>.'),
+                        __('https://make.wordpress.org/')
+                    );
+                }
+                ?>
 			</p>
 		</div>
 
@@ -80,20 +80,20 @@ $credits = wp_credits();
 	</div>
 
 <?php
-if ( ! $credits ) {
-	echo '</div>';
-	require_once ABSPATH . 'wp-admin/admin-footer.php';
-	exit;
-}
+if (! $credits) {
+                    echo '</div>';
+                    require_once ABSPATH . 'wp-admin/admin-footer.php';
+                    exit;
+                }
 ?>
 
 	<hr />
 
 	<div class="about__section">
 		<div class="column has-subtle-background-color">
-			<?php wp_credits_section_title( $credits['groups']['core-developers'] ); ?>
-			<?php wp_credits_section_list( $credits, 'core-developers' ); ?>
-			<?php wp_credits_section_list( $credits, 'contributing-developers' ); ?>
+			<?php wp_credits_section_title($credits['groups']['core-developers']); ?>
+			<?php wp_credits_section_list($credits, 'core-developers'); ?>
+			<?php wp_credits_section_list($credits, 'contributing-developers'); ?>
 		</div>
 	</div>
 
@@ -101,19 +101,19 @@ if ( ! $credits ) {
 
 	<div class="about__section">
 		<div class="column">
-			<?php wp_credits_section_title( $credits['groups']['props'] ); ?>
-			<?php wp_credits_section_list( $credits, 'props' ); ?>
+			<?php wp_credits_section_title($credits['groups']['props']); ?>
+			<?php wp_credits_section_list($credits, 'props'); ?>
 		</div>
 	</div>
 
 	<hr />
 
-	<?php if ( isset( $credits['groups']['translators'] ) || isset( $credits['groups']['validators'] ) ) : ?>
+	<?php if (isset($credits['groups']['translators']) || isset($credits['groups']['validators'])) : ?>
 	<div class="about__section">
 		<div class="column">
-			<?php wp_credits_section_title( $credits['groups']['validators'] ); ?>
-			<?php wp_credits_section_list( $credits, 'validators' ); ?>
-			<?php wp_credits_section_list( $credits, 'translators' ); ?>
+			<?php wp_credits_section_title($credits['groups']['validators']); ?>
+			<?php wp_credits_section_list($credits, 'validators'); ?>
+			<?php wp_credits_section_list($credits, 'translators'); ?>
 		</div>
 	</div>
 
@@ -122,8 +122,8 @@ if ( ! $credits ) {
 
 	<div class="about__section">
 		<div class="column">
-			<?php wp_credits_section_title( $credits['groups']['libraries'] ); ?>
-			<?php wp_credits_section_list( $credits, 'libraries' ); ?>
+			<?php wp_credits_section_title($credits['groups']['libraries']); ?>
+			<?php wp_credits_section_list($credits, 'libraries'); ?>
 		</div>
 	</div>
 </div>
@@ -134,14 +134,14 @@ require_once ABSPATH . 'wp-admin/admin-footer.php';
 return;
 
 // These are strings returned by the API that we want to be translatable.
-__( 'Project Leaders' );
+__('Project Leaders');
 /* translators: %s: The current WordPress version number. */
-__( 'Core Contributors to WordPress %s' );
-__( 'Noteworthy Contributors' );
-__( 'Cofounder, Project Lead' );
-__( 'Lead Developer' );
-__( 'Release Lead' );
-__( 'Release Design Lead' );
-__( 'Release Deputy' );
-__( 'Core Developer' );
-__( 'External Libraries' );
+__('Core Contributors to WordPress %s');
+__('Noteworthy Contributors');
+__('Cofounder, Project Lead');
+__('Lead Developer');
+__('Release Lead');
+__('Release Design Lead');
+__('Release Deputy');
+__('Core Developer');
+__('External Libraries');

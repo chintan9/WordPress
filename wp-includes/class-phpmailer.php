@@ -1534,7 +1534,7 @@ class PHPMailer
     public function getSMTPInstance()
     {
         if (!is_object($this->smtp)) {
-			require_once 'class-smtp.php';
+            require_once 'class-smtp.php';
             $this->smtp = new SMTP;
         }
         return $this->smtp;
@@ -2076,7 +2076,7 @@ class PHPMailer
 
         // sendmail and mail() extract Bcc from the header before sending
         if ((
-                $this->Mailer == 'sendmail' or $this->Mailer == 'qmail' or $this->Mailer == 'mail'
+            $this->Mailer == 'sendmail' or $this->Mailer == 'qmail' or $this->Mailer == 'mail'
             )
             and count($this->bcc) > 0
         ) {
@@ -2203,7 +2203,8 @@ class PHPMailer
      * Create unique ID
      * @return string
      */
-    protected function generateId() {
+    protected function generateId()
+    {
         return md5(uniqid(time()));
     }
 
@@ -2552,7 +2553,6 @@ class PHPMailer
                 6 => $disposition,
                 7 => 0
             );
-
         } catch (phpmailerException $exc) {
             $this->setError($exc->getMessage());
             $this->edebug($exc->getMessage());
@@ -2712,7 +2712,7 @@ class PHPMailer
             if (!self::isPermittedPath($path) or !file_exists($path)) {
                 throw new phpmailerException($this->lang('file_open') . $path, self::STOP_CONTINUE);
             }
-            $magic_quotes = ( PHP_VERSION_ID < 70400 && get_magic_quotes_runtime() ); // WP: Patched for PHP 7.4.
+            $magic_quotes = (PHP_VERSION_ID < 70400 && get_magic_quotes_runtime()); // WP: Patched for PHP 7.4.
             if ($magic_quotes) {
                 if (version_compare(PHP_VERSION, '5.3.0', '<')) {
                     set_magic_quotes_runtime(false);
@@ -2803,6 +2803,7 @@ class PHPMailer
             case 'comment':
                 $matchcount = preg_match_all('/[()"]/', $str, $matches);
                 // Intentional fall-through
+                // no break
             case 'text':
             default:
                 $matchcount += preg_match_all('/[\000-\010\013\014\016-\037\177-\377]/', $str, $matches);
@@ -2946,7 +2947,8 @@ class PHPMailer
     public function encodeQPphp(
         $string,
         $line_max = 76,
-        /** @noinspection PhpUnusedParameterInspection */ $space_conv = false
+        /** @noinspection PhpUnusedParameterInspection */ 
+        $space_conv = false
     ) {
         return $this->encodeQP($string, $line_max);
     }
@@ -2975,6 +2977,7 @@ class PHPMailer
                 $pattern = '\(\)"';
                 // intentional fall-through
                 // for this reason we build the $pattern without including delimiters and []
+                // no break
             case 'text':
             default:
                 // RFC 2047 section 5.1
