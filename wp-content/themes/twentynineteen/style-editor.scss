@@ -769,8 +769,8 @@ ul.wp-block-archives,
 /** === Group Block === */
 
 // This matches the 22px value for 1rem that used on the front end.
-// It must be specified in pixels for the editor, since the root font 
-// size is different here. 
+// It must be specified in pixels for the editor, since the root font
+// size is different here.
 $group-block-background__padding: $font__size_base;
 
 .wp-block[data-type="core/group"] {
@@ -823,7 +823,7 @@ $group-block-background__padding: $font__size_base;
 
 		// Group block with background color
 		> .wp-block-group.has-background {
-			
+
 			// Child blocks: Default alignments
 			> .wp-block-group__inner-container > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:not([data-align="wide"]):not([data-align="full"]) {
 				@include media(tablet) {
@@ -843,10 +843,10 @@ $group-block-background__padding: $font__size_base;
 		// Group block base styles
 		> .is-block-content > .wp-block-group {
 
-			// Margins & padding are added to this container to mimic 
-			// the style + spacing of the .editor-writing-flow global 
-			// container. This way, child items sync up with the placement 
-			// and size of other top-level blocks. 
+			// Margins & padding are added to this container to mimic
+			// the style + spacing of the .editor-writing-flow global
+			// container. This way, child items sync up with the placement
+			// and size of other top-level blocks.
 			> .wp-block-group__inner-container > .block-editor-inner-blocks > .block-editor-block-list__layout {
 
 				@include media(mobile) {
@@ -855,14 +855,14 @@ $group-block-background__padding: $font__size_base;
 				}
 
 				// 2px of extra padding are added to each side here
-				// To better match up with the spacing of the whole 
-				// document. 
+				// To better match up with the spacing of the whole
+				// document.
 				@include media(tablet) {
 					width: 80%;
 					margin-left: 10%;
 					margin-right: 10%;
 					padding-left: 48px;
-					padding-right: 48px; 
+					padding-right: 48px;
 				}
 
 				// Child blocks: All alignments except full
@@ -917,7 +917,7 @@ $group-block-background__padding: $font__size_base;
 		> .is-block-content > .wp-block-group.has-background {
 
 			// When the Group block is full width, we can remove the left/right padding
-			// and let this inherit the 
+			// and let this inherit the
 			padding: $group-block-background__padding 0;
 
 			@include media(mobile) {
