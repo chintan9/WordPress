@@ -42,119 +42,131 @@
  */
 
 /**
- * Caches data to the filesystem
+ * Caches data to memcached
  *
- * @package SimplePie
+ * Registered for URLs with the "memcached" protocol
+ *
+ * For example, `memcached://localhost:11211/?timeout=3600&prefix=sp_` will
+ * connect to memcached on `localhost` on port 11211. All tables will be
+ * prefixed with `sp_` and data will expire after 3600 seconds
+ *
+ * @package    SimplePie
  * @subpackage Caching
+ * @author     Paul L. McNeely
+ * @uses       Memcached
  */
-class SimplePie_Cache_File implements SimplePie_Cache_Base
+class SimplePie_Cache_Memcached implements SimplePie_Cache_Base
 {
     /**
-     * Location string
-     *
-     * @see SimplePie::$cache_location
-     * @var string
+     * Memcached instance
+     * @var Memcached
      */
-    protected $location;
+    protected $cache;
 
     /**
-     * Filename
-     *
-     * @var string
+     * Options
+     * @var array
      */
-    protected $filename;
+    protected $options;
 
     /**
-     * File extension
-     *
-     * @var string
-     */
-    protected $extension;
-
-    /**
-     * File path
-     *
+     * Cache name
      * @var string
      */
     protected $name;
 
     /**
      * Create a new cache object
-     *
      * @param string $location Location string (from SimplePie::$cache_location)
-     * @param string $name Unique ID for the cache
-     * @param string $type Either TYPE_FEED for SimplePie data, or TYPE_IMAGE for image data
+     * @param string $name     Unique ID for the cache
+     * @param string $type     Either TYPE_FEED for SimplePie data, or TYPE_IMAGE for image data
      */
     public function __construct($location, $name, $type)
     {
-        $this->location = $location;
-        $this->filename = $name;
-        $this->extension = $type;
-        $this->name = "$this->location/$this->filename.$this->extension";
+        $this->options = array(
+            'host'   => '127.0.0.1',
+            'port'   => 11211,
+            'extras' => array(
+                'timeout' => 3600, // one hour
+                'prefix'  => 'simplepie_',
+            ),
+        );
+        $this->options = SimplePie_Misc::array_merge_recursive($this->options, SimplePie_Cache::parse_URL($location));
+
+        $this->name = $this->options['extras']['prefix'] . md5("$name:$type");
+
+        $this->cache = new Memcached();
+        $this->cache->addServer($this->options['host'], (int)$this->options['port']);
     }
 
     /**
      * Save data to the cache
-     *
      * @param array|SimplePie $data Data to store in the cache. If passed a SimplePie object, only cache the $data property
      * @return bool Successfulness
      */
     public function save($data)
     {
-        if (file_exists($this->name) && is_writable($this->name) || file_exists($this->location) && is_writable($this->location)) {
-            if ($data instanceof SimplePie) {
-                $data = $data->data;
-            }
-
-            $data = serialize($data);
-            return (bool) file_put_contents($this->name, $data);
+        if ($data instanceof SimplePie) {
+            $data = $data->data;
         }
-        return false;
+
+        return $this->setData(serialize($data));
     }
 
     /**
      * Retrieve the data saved to the cache
-     *
      * @return array Data for SimplePie::$data
      */
     public function load()
     {
-        if (file_exists($this->name) && is_readable($this->name)) {
-            return unserialize(file_get_contents($this->name));
+        $data = $this->cache->get($this->name);
+
+        if ($data !== false) {
+            return unserialize($data);
         }
         return false;
     }
 
     /**
      * Retrieve the last modified time for the cache
-     *
      * @return int Timestamp
      */
     public function mtime()
     {
-        return @filemtime($this->name);
+        $data = $this->cache->get($this->name . '_mtime');
+        return (int) $data;
     }
 
     /**
      * Set the last modified time to the current time
-     *
      * @return bool Success status
      */
     public function touch()
     {
-        return @touch($this->name);
+        $data = $this->cache->get($this->name);
+        return $this->setData($data);
     }
 
     /**
      * Remove the cache
-     *
      * @return bool Success status
      */
     public function unlink()
     {
-        if (file_exists($this->name)) {
-            return unlink($this->name);
+        return $this->cache->delete($this->name, 0);
+    }
+
+    /**
+     * Set the last modified time and data to Memcached
+     * @return bool Success status
+     */
+    private function setData($data)
+    {
+        if ($data !== false) {
+            $this->cache->set($this->name . '_mtime', time(), (int)$this->options['extras']['timeout']);
+            return $this->cache->set($this->name, $data, (int)$this->options['extras']['timeout']);
         }
+
         return false;
     }
 }
