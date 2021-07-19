@@ -87,6 +87,13 @@ this["wp"] = this["wp"] || {}; this["wp"]["blockLibrary"] =
 /************************************************************************/
 /******/ ({
 
+/***/ "1CF3":
+/***/ (function(module, exports) {
+
+(function() { module.exports = window["wp"]["dom"]; }());
+
+/***/ }),
+
 /***/ "1K8p":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3814,7 +3821,7 @@ function (_super) {
   };
 
   Cropper.prototype.componentDidUpdate = function (prevProps) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 
     if (prevProps.rotation !== this.props.rotation) {
       this.computeSizes();
@@ -3833,6 +3840,10 @@ function (_super) {
       this.props.zoomWithScroll ? this.containerRef.addEventListener('wheel', this.onWheel, {
         passive: false
       }) : this.clearScrollEvent();
+    }
+
+    if (prevProps.video !== this.props.video) {
+      (_j = this.videoRef) === null || _j === void 0 ? void 0 : _j.load();
     }
   };
 
@@ -9629,6 +9640,7 @@ const buttons_deprecated_deprecated = [{
  * WordPress dependencies
  */
 
+
 /**
  * Internal dependencies
  */
@@ -9675,12 +9687,11 @@ const buttons_transforms_transforms = {
     transform: buttons => // Creates the buttons block
     Object(external_wp_blocks_["createBlock"])(buttons_transforms_name, {}, // Loop the selected buttons
     buttons.map(attributes => {
-      // Remove any HTML tags
-      const div = document.createElement('div');
-      div.innerHTML = attributes.content;
-      const text = div.innerText || ''; // Get first url
+      const element = Object(external_wp_richText_["__unstableCreateElement"])(document, attributes.content); // Remove any HTML tags
 
-      const link = div.querySelector('a');
+      const text = element.innerText || ''; // Get first url
+
+      const link = element.querySelector('a');
       const url = link === null || link === void 0 ? void 0 : link.getAttribute('href'); // Create singular button in the buttons block
 
       return Object(external_wp_blocks_["createBlock"])('core/button', {
@@ -9690,10 +9701,9 @@ const buttons_transforms_transforms = {
     })),
     isMatch: paragraphs => {
       return paragraphs.every(attributes => {
-        const div = document.createElement('div');
-        div.innerHTML = attributes.content;
-        const text = div.innerText || '';
-        const links = div.querySelectorAll('a');
+        const element = Object(external_wp_richText_["__unstableCreateElement"])(document, attributes.content);
+        const text = element.innerText || '';
+        const links = element.querySelectorAll('a');
         return text.length <= 30 && links.length <= 1;
       });
     }
@@ -12532,7 +12542,7 @@ function ColumnEdit({
     [`is-vertically-aligned-${verticalAlignment}`]: verticalAlignment
   });
   const units = Object(external_wp_components_["__experimentalUseCustomUnits"])({
-    availableUnits: Object(external_wp_blockEditor_["useSetting"])('layout.units') || ['%', 'px', 'em', 'rem', 'vw']
+    availableUnits: Object(external_wp_blockEditor_["useSetting"])('spacing.units') || ['%', 'px', 'em', 'rem', 'vw']
   });
   const {
     columnsIds,
@@ -19312,12 +19322,16 @@ const list_settings = {
   save: list_save_save
 };
 
+// EXTERNAL MODULE: external ["wp","dom"]
+var external_wp_dom_ = __webpack_require__("1CF3");
+
 // CONCATENATED MODULE: ./node_modules/@wordpress/block-library/build-module/missing/edit.js
 
 
 /**
  * WordPress dependencies
  */
+
 
 
 
@@ -19357,7 +19371,7 @@ function MissingBlockWarning({
     className: 'has-warning'
   }), Object(external_wp_element_["createElement"])(external_wp_blockEditor_["Warning"], {
     actions: actions
-  }, messageHTML), Object(external_wp_element_["createElement"])(external_wp_element_["RawHTML"], null, originalUndelimitedContent));
+  }, messageHTML), Object(external_wp_element_["createElement"])(external_wp_element_["RawHTML"], null, Object(external_wp_dom_["safeHTML"])(originalUndelimitedContent)));
 }
 
 const MissingEdit = Object(external_wp_data_["withDispatch"])((dispatch, {
@@ -28131,7 +28145,8 @@ function LogoEdit({
     siteLogoId,
     canUserEdit,
     url,
-    mediaItemData
+    mediaItemData,
+    isRequestingMediaItem
   } = Object(external_wp_data_["useSelect"])(select => {
     const {
       canUser,
@@ -28153,6 +28168,10 @@ function LogoEdit({
       context: 'view'
     });
 
+    const _isRequestingMediaItem = _siteLogoId && !select(external_wp_coreData_["store"]).hasFinishedResolution('getEntityRecord', ['root', 'media', _siteLogoId, {
+      context: 'view'
+    }]);
+
     return {
       siteLogoId: _siteLogoId,
       canUserEdit: _canUserEdit,
@@ -28160,7 +28179,8 @@ function LogoEdit({
       mediaItemData: mediaItem && {
         url: mediaItem.source_url,
         alt: mediaItem.alt_text
-      }
+      },
+      isRequestingMediaItem: _isRequestingMediaItem
     };
   }, []);
   const {
@@ -28214,7 +28234,7 @@ function LogoEdit({
   const label = Object(external_wp_i18n_["__"])('Site Logo');
 
   let logoImage;
-  const isLoading = siteLogoId === undefined || siteLogoId && !logoUrl;
+  const isLoading = siteLogoId === undefined || isRequestingMediaItem;
 
   if (isLoading) {
     logoImage = Object(external_wp_element_["createElement"])(external_wp_components_["Spinner"], null);
@@ -28240,11 +28260,13 @@ function LogoEdit({
     ref,
     className: classes
   });
-  return Object(external_wp_element_["createElement"])("div", blockProps, controls, !!logoUrl && logoImage, !logoUrl && !canUserEdit && Object(external_wp_element_["createElement"])("div", {
-    className: "site-logo_placeholder"
-  }, Object(external_wp_element_["createElement"])(external_wp_components_["Icon"], {
-    icon: site_logo
-  }), Object(external_wp_element_["createElement"])("p", null, " ", Object(external_wp_i18n_["__"])('Site Logo'))), !logoUrl && canUserEdit && Object(external_wp_element_["createElement"])(external_wp_blockEditor_["MediaPlaceholder"], {
+  return Object(external_wp_element_["createElement"])("div", blockProps, controls, !!logoUrl && logoImage, !logoUrl && !canUserEdit && Object(external_wp_element_["createElement"])(external_wp_components_["Placeholder"], {
+    className: "site-logo_placeholder",
+    icon: site_logo,
+    label: label
+  }, isLoading && Object(external_wp_element_["createElement"])("span", {
+    className: "components-placeholder__preview"
+  }, Object(external_wp_element_["createElement"])(external_wp_components_["Spinner"], null))), !logoUrl && canUserEdit && Object(external_wp_element_["createElement"])(external_wp_blockEditor_["MediaPlaceholder"], {
     icon: Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockIcon"], {
       icon: site_logo
     }),
@@ -28758,10 +28780,12 @@ function QueryToolbar({
       min: 1,
       max: 100,
       onChange: value => {
-        var _value;
+        if (isNaN(value) || value < 1 || value > 100) {
+          return;
+        }
 
-        return setQuery({
-          perPage: (_value = +value) !== null && _value !== void 0 ? _value : -1
+        setQuery({
+          perPage: value
         });
       },
       step: "1",
@@ -28773,9 +28797,15 @@ function QueryToolbar({
       labelPosition: "edge",
       min: 0,
       max: 100,
-      onChange: value => setQuery({
-        offset: +value
-      }),
+      onChange: value => {
+        if (isNaN(value) || value < 0 || value > 100) {
+          return;
+        }
+
+        setQuery({
+          offset: value
+        });
+      },
       step: "1",
       value: query.offset,
       isDragEnabled: false
@@ -28788,9 +28818,15 @@ function QueryToolbar({
       label: Object(external_wp_i18n_["__"])('Max page to show'),
       labelPosition: "edge",
       min: 0,
-      onChange: value => setQuery({
-        pages: +value
-      }),
+      onChange: value => {
+        if (isNaN(value) || value < 0) {
+          return;
+        }
+
+        setQuery({
+          pages: value
+        });
+      },
       step: "1",
       value: query.pages,
       isDragEnabled: false
@@ -28842,9 +28878,8 @@ function QueryToolbar({
  * @return {QueryTermsInfo} The object with the terms information.
  */
 
-const getTermsInfo = terms => ({
-  terms,
-  ...(terms === null || terms === void 0 ? void 0 : terms.reduce((accumulator, term) => {
+const getTermsInfo = terms => {
+  const mapping = terms === null || terms === void 0 ? void 0 : terms.reduce((accumulator, term) => {
     const {
       mapById,
       mapByName,
@@ -28858,8 +28893,12 @@ const getTermsInfo = terms => ({
     mapById: {},
     mapByName: {},
     names: []
-  }))
-});
+  });
+  return {
+    terms,
+    ...mapping
+  };
+};
 /**
  * Returns a helper object that contains:
  * 1. An `options` object from the available post types, to be passed to a `SelectControl`.
@@ -29523,6 +29562,23 @@ const imageDateTitle = Object(external_wp_element_["createElement"])(external_wp
  */
 
 
+const QUERY_DEFAULT_ATTRIBUTES = {
+  query: {
+    perPage: 3,
+    pages: 0,
+    offset: 0,
+    postType: 'post',
+    categoryIds: [],
+    tagIds: [],
+    order: 'desc',
+    orderBy: 'date',
+    author: '',
+    search: '',
+    exclude: [],
+    sticky: '',
+    inherit: false
+  }
+};
 const query_variations_variations = [{
   name: 'posts-list',
   title: Object(external_wp_i18n_["__"])('Posts List'),
@@ -29549,24 +29605,32 @@ const query_variations_variations = [{
   name: 'title-date',
   title: Object(external_wp_i18n_["__"])('Title & Date'),
   icon: titleDate,
+  attributes: { ...QUERY_DEFAULT_ATTRIBUTES
+  },
   innerBlocks: [['core/post-template', {}, [['core/post-title'], ['core/post-date']]]],
   scope: ['block']
 }, {
   name: 'title-excerpt',
   title: Object(external_wp_i18n_["__"])('Title & Excerpt'),
   icon: titleExcerpt,
+  attributes: { ...QUERY_DEFAULT_ATTRIBUTES
+  },
   innerBlocks: [['core/post-template', {}, [['core/post-title'], ['core/post-excerpt']]]],
   scope: ['block']
 }, {
   name: 'title-date-excerpt',
   title: Object(external_wp_i18n_["__"])('Title, Date, & Excerpt'),
   icon: titleDateExcerpt,
+  attributes: { ...QUERY_DEFAULT_ATTRIBUTES
+  },
   innerBlocks: [['core/post-template', {}, [['core/post-title'], ['core/post-date'], ['core/post-excerpt']]]],
   scope: ['block']
 }, {
   name: 'image-date-title',
   title: Object(external_wp_i18n_["__"])('Image, Date, & Title'),
   icon: imageDateTitle,
+  attributes: { ...QUERY_DEFAULT_ATTRIBUTES
+  },
   innerBlocks: [['core/post-template', {}, [['core/post-featured-image'], ['core/post-date'], ['core/post-title']]]],
   scope: ['block']
 }];
@@ -31126,27 +31190,9 @@ const post_excerpt_postExcerpt = Object(external_wp_element_["createElement"])(e
  */
 
 
-
-function usePostContentExcerpt(wordCount, postId, postType) {
-  // Don't destrcuture items from content here, it can be undefined.
-  const [,, content] = Object(external_wp_coreData_["useEntityProp"])('postType', postType, 'content', postId);
-  const renderedPostContent = content === null || content === void 0 ? void 0 : content.rendered;
-  return Object(external_wp_element_["useMemo"])(() => {
-    if (!renderedPostContent) {
-      return '';
-    }
-
-    const excerptElement = document.createElement('div');
-    excerptElement.innerHTML = renderedPostContent;
-    const excerpt = excerptElement.textContent || excerptElement.innerText || '';
-    return excerpt.trim().split(' ', wordCount).join(' ');
-  }, [renderedPostContent, wordCount]);
-}
-
 function PostExcerptEditor({
   attributes: {
     textAlign,
-    wordCount,
     moreText,
     showMoreOnNewLine
   },
@@ -31165,12 +31211,22 @@ function PostExcerptEditor({
     rendered: renderedExcerpt,
     protected: isProtected
   } = {}] = Object(external_wp_coreData_["useEntityProp"])('postType', postType, 'excerpt', postId);
-  const postContentExcerpt = usePostContentExcerpt(wordCount, postId, postType);
   const blockProps = Object(external_wp_blockEditor_["useBlockProps"])({
     className: classnames_default()({
       [`has-text-align-${textAlign}`]: textAlign
     })
   });
+  /**
+   * When excerpt is editable, strip the html tags from
+   * rendered excerpt. This will be used if the entity's
+   * excerpt has been produced from the content.
+   */
+
+  const strippedRenderedExcerpt = Object(external_wp_element_["useMemo"])(() => {
+    if (!renderedExcerpt) return '';
+    const document = new window.DOMParser().parseFromString(renderedExcerpt, 'text/html');
+    return document.body.textContent || document.body.innerText || '';
+  }, [renderedExcerpt]);
 
   if (!postType || !postId) {
     return Object(external_wp_element_["createElement"])("div", blockProps, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["Warning"], null, Object(external_wp_i18n_["__"])('Post excerpt block: no post found.')));
@@ -31193,11 +31249,11 @@ function PostExcerptEditor({
   const excerptContent = isEditable ? Object(external_wp_element_["createElement"])(external_wp_blockEditor_["RichText"], {
     className: !showMoreOnNewLine && 'wp-block-post-excerpt__excerpt is-inline',
     "aria-label": Object(external_wp_i18n_["__"])('Post excerpt text'),
-    value: rawExcerpt || postContentExcerpt || (isSelected ? '' : Object(external_wp_i18n_["__"])('No post excerpt found')),
+    value: rawExcerpt || strippedRenderedExcerpt || (isSelected ? '' : Object(external_wp_i18n_["__"])('No post excerpt found')),
     onChange: setExcerpt
-  }) : renderedExcerpt && Object(external_wp_element_["createElement"])(external_wp_element_["RawHTML"], {
+  }) : renderedExcerpt && Object(external_wp_element_["createElement"])(external_wp_components_["Disabled"], null, Object(external_wp_element_["createElement"])(external_wp_element_["RawHTML"], {
     key: "html"
-  }, renderedExcerpt) || postContentExcerpt || Object(external_wp_i18n_["__"])('No post excerpt found');
+  }, renderedExcerpt)) || Object(external_wp_i18n_["__"])('No post excerpt found');
   return Object(external_wp_element_["createElement"])(external_wp_element_["Fragment"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockControls"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["AlignmentToolbar"], {
     value: textAlign,
     onChange: newAlign => setAttributes({
@@ -31205,15 +31261,7 @@ function PostExcerptEditor({
     })
   })), Object(external_wp_element_["createElement"])(external_wp_blockEditor_["InspectorControls"], null, Object(external_wp_element_["createElement"])(external_wp_components_["PanelBody"], {
     title: Object(external_wp_i18n_["__"])('Post Excerpt Settings')
-  }, !renderedExcerpt && Object(external_wp_element_["createElement"])(external_wp_components_["RangeControl"], {
-    label: Object(external_wp_i18n_["__"])('Max words'),
-    value: wordCount,
-    onChange: newExcerptLength => setAttributes({
-      wordCount: newExcerptLength
-    }),
-    min: 10,
-    max: 100
-  }), Object(external_wp_element_["createElement"])(external_wp_components_["ToggleControl"], {
+  }, Object(external_wp_element_["createElement"])(external_wp_components_["ToggleControl"], {
     label: Object(external_wp_i18n_["__"])('Show link on new line'),
     checked: showMoreOnNewLine,
     onChange: newShowMoreOnNewLine => setAttributes({
@@ -31243,10 +31291,6 @@ const post_excerpt_metadata = {
   attributes: {
     textAlign: {
       type: "string"
-    },
-    wordCount: {
-      type: "number",
-      "default": 55
     },
     moreText: {
       type: "string"
@@ -31458,12 +31502,26 @@ function usePostTerms({
   postType,
   term
 }) {
+  var _term$visibility2;
+
   const {
     rest_base: restBase,
     slug
   } = term;
   const [termIds] = Object(external_wp_coreData_["useEntityProp"])('postType', postType, restBase, postId);
   return Object(external_wp_data_["useSelect"])(select => {
+    var _term$visibility;
+
+    const visible = term === null || term === void 0 ? void 0 : (_term$visibility = term.visibility) === null || _term$visibility === void 0 ? void 0 : _term$visibility.publicly_queryable;
+
+    if (!visible) {
+      return {
+        postTerms: [],
+        _isLoading: false,
+        hasPostTerms: false
+      };
+    }
+
     if (!termIds) {
       // Waiting for post terms to be fetched.
       return {
@@ -31494,7 +31552,7 @@ function usePostTerms({
       isLoading: _isLoading,
       hasPostTerms: !!(terms !== null && terms !== void 0 && terms.length)
     };
-  }, [termIds]);
+  }, [termIds, term === null || term === void 0 ? void 0 : (_term$visibility2 = term.visibility) === null || _term$visibility2 === void 0 ? void 0 : _term$visibility2.publicly_queryable]);
 }
 
 // CONCATENATED MODULE: ./node_modules/@wordpress/block-library/build-module/post-terms/edit.js
@@ -31541,7 +31599,7 @@ function PostTermsEdit({
       getTaxonomy
     } = select(external_wp_coreData_["store"]);
     const taxonomy = getTaxonomy(term);
-    return taxonomy !== null && taxonomy !== void 0 && (_taxonomy$visibility = taxonomy.visibility) !== null && _taxonomy$visibility !== void 0 && _taxonomy$visibility.show_ui ? taxonomy : {};
+    return taxonomy !== null && taxonomy !== void 0 && (_taxonomy$visibility = taxonomy.visibility) !== null && _taxonomy$visibility !== void 0 && _taxonomy$visibility.publicly_queryable ? taxonomy : {};
   }, [term]);
   const {
     postTerms,

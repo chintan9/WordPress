@@ -181,6 +181,7 @@ class WP_Theme_JSON {
 	const ALLOWED_SETTINGS = array(
 		'color'      => array(
 			'custom'         => null,
+			'customDuotone'  => null,
 			'customGradient' => null,
 			'duotone'        => null,
 			'gradients'      => null,
@@ -188,7 +189,10 @@ class WP_Theme_JSON {
 			'palette'        => null,
 		),
 		'custom'     => null,
-		'layout'     => null,
+		'layout'     => array(
+			'contentSize' => null,
+			'wideSize'    => null,
+		),
 		'spacing'    => array(
 			'customMargin'  => null,
 			'customPadding' => null,
@@ -1106,8 +1110,8 @@ class WP_Theme_JSON {
 		foreach ( $nodes as $metadata ) {
 			foreach ( $to_replace as $property_path ) {
 				$path = array_merge( $metadata['path'], $property_path );
-				$node = _wp_array_get( $incoming_data, $path, array() );
-				if ( ! empty( $node ) ) {
+				$node = _wp_array_get( $incoming_data, $path, null );
+				if ( isset( $node ) ) {
 					_wp_array_set( $this->theme_json, $path, $node );
 				}
 			}
@@ -1174,7 +1178,7 @@ class WP_Theme_JSON {
 				$theme_settings['settings']['spacing'] = array();
 			}
 			$theme_settings['settings']['spacing']['units'] = ( true === $settings['enableCustomUnits'] ) ?
-				array( 'px', 'em', 'rem', 'vh', 'vw' ) :
+				array( 'px', 'em', 'rem', 'vh', 'vw', '%' ) :
 				$settings['enableCustomUnits'];
 		}
 
@@ -1206,12 +1210,6 @@ class WP_Theme_JSON {
 			$theme_settings['settings']['typography']['fontSizes'] = $font_sizes;
 		}
 
-		/*
-		 * This allows to make the plugin work with WordPress 5.8 beta
-		 * as well as lower versions. The second check can be removed
-		 * as soon as the minimum WordPress version for the plugin
-		 * is bumped to 5.8.
-		 */
 		if ( isset( $settings['enableCustomSpacing'] ) ) {
 			if ( ! isset( $theme_settings['settings']['spacing'] ) ) {
 				$theme_settings['settings']['spacing'] = array();

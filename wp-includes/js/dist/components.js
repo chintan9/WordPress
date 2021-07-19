@@ -20798,6 +20798,7 @@ function useAutocomplete({
 
   Object(external_wp_element_["useEffect"])(() => {
     if (!textContent) {
+      reset();
       return;
     }
 
@@ -25270,7 +25271,7 @@ class suggestions_list_SuggestionsList extends external_wp_element_["Component"]
   componentDidUpdate() {
     // only have to worry about scrolling selected suggestion into view
     // when already expanded
-    if (this.props.selectedIndex > -1 && this.props.scrollIntoView) {
+    if (this.props.selectedIndex > -1 && this.props.scrollIntoView && this.list.children[this.props.selectedIndex]) {
       this.scrollingIntoView = true;
       lib_default()(this.list.children[this.props.selectedIndex], this.list, {
         onlyScrollIfNeeded: true
@@ -32708,6 +32709,7 @@ function DuotonePicker({
   colorPalette,
   duotonePalette,
   disableCustomColors,
+  disableCustomDuotone,
   value,
   onChange
 }) {
@@ -32742,10 +32744,10 @@ function DuotonePicker({
     actions: Object(external_wp_element_["createElement"])(CircularOptionPicker.ButtonAction, {
       onClick: () => onChange(undefined)
     }, Object(external_wp_i18n_["__"])('Clear'))
-  }, !disableCustomColors && Object(external_wp_element_["createElement"])(CustomDuotoneBar, {
+  }, !disableCustomColors && !disableCustomDuotone && Object(external_wp_element_["createElement"])(CustomDuotoneBar, {
     value: value,
     onChange: onChange
-  }), colorPalette && Object(external_wp_element_["createElement"])(color_list_picker, {
+  }), !disableCustomDuotone && Object(external_wp_element_["createElement"])(color_list_picker, {
     labels: [Object(external_wp_i18n_["__"])('Shadows'), Object(external_wp_i18n_["__"])('Highlights')],
     colors: colorPalette,
     value: value,

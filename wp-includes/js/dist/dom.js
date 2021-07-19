@@ -120,6 +120,7 @@ __webpack_require__.d(__webpack_exports__, "__unstableStripHTML", function() { r
 __webpack_require__.d(__webpack_exports__, "isEmpty", function() { return /* reexport */ isEmpty; });
 __webpack_require__.d(__webpack_exports__, "removeInvalidHTML", function() { return /* reexport */ removeInvalidHTML; });
 __webpack_require__.d(__webpack_exports__, "isRTL", function() { return /* reexport */ isRTL; });
+__webpack_require__.d(__webpack_exports__, "safeHTML", function() { return /* reexport */ safeHTML; });
 __webpack_require__.d(__webpack_exports__, "getPhrasingContentSchema", function() { return /* reexport */ getPhrasingContentSchema; });
 __webpack_require__.d(__webpack_exports__, "isPhrasingContent", function() { return /* reexport */ isPhrasingContent; });
 __webpack_require__.d(__webpack_exports__, "isTextContent", function() { return /* reexport */ isTextContent; });
@@ -905,10 +906,35 @@ function isEntirelySelected(element) {
 
   const lastChild = element.lastChild;
   assertIsDefined(lastChild, 'lastChild');
-  const lastChildContentLength = lastChild.nodeType === lastChild.TEXT_NODE ?
+  const endContainerContentLength = endContainer.nodeType === endContainer.TEXT_NODE ?
   /** @type {Text} */
-  lastChild.data.length : lastChild.childNodes.length;
-  return startContainer === element.firstChild && endContainer === element.lastChild && startOffset === 0 && endOffset === lastChildContentLength;
+  endContainer.data.length : endContainer.childNodes.length;
+  return isDeepChild(startContainer, element, 'firstChild') && isDeepChild(endContainer, element, 'lastChild') && startOffset === 0 && endOffset === endContainerContentLength;
+}
+/**
+ * Check whether the contents of the element have been entirely selected.
+ * Returns true if there is no possibility of selection.
+ *
+ * @param {HTMLElement|Node} query The element to check.
+ * @param {HTMLElement} container The container that we suspect "query" may be a first or last child of.
+ * @param {"firstChild"|"lastChild"} propName "firstChild" or "lastChild"
+ *
+ * @return {boolean} True if query is a deep first/last child of container, false otherwise.
+ */
+
+function isDeepChild(query, container, propName) {
+  /** @type {HTMLElement | ChildNode | null} */
+  let candidate = container;
+
+  do {
+    if (query === candidate) {
+      return true;
+    }
+
+    candidate = candidate[propName];
+  } while (candidate);
+
+  return false;
 }
 
 // CONCATENATED MODULE: ./node_modules/@wordpress/dom/build-module/dom/is-rtl.js
@@ -1928,7 +1954,52 @@ function removeInvalidHTML(HTML, schema, inline) {
   return doc.body.innerHTML;
 }
 
+// CONCATENATED MODULE: ./node_modules/@wordpress/dom/build-module/dom/safe-html.js
+/**
+ * Internal dependencies
+ */
+
+/**
+ * Strips scripts and on* attributes from HTML.
+ *
+ * @param {string} html HTML to sanitize.
+ *
+ * @return {string} The sanitized HTML.
+ */
+
+function safeHTML(html) {
+  const {
+    body
+  } = document.implementation.createHTMLDocument('');
+  body.innerHTML = html;
+  const elements = body.getElementsByTagName('*');
+  let elementIndex = elements.length;
+
+  while (elementIndex--) {
+    const element = elements[elementIndex];
+
+    if (element.tagName === 'SCRIPT') {
+      remove(element);
+    } else {
+      let attributeIndex = element.attributes.length;
+
+      while (attributeIndex--) {
+        const {
+          name: key
+        } = element.attributes[attributeIndex];
+
+        if (key.startsWith('on')) {
+          element.removeAttribute(key);
+        }
+      }
+    }
+  }
+
+  return body.innerHTML;
+}
+
 // CONCATENATED MODULE: ./node_modules/@wordpress/dom/build-module/dom/index.js
+
 
 
 

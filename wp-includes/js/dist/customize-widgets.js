@@ -137,6 +137,9 @@ var external_wp_blockLibrary_ = __webpack_require__("QyPg");
 // EXTERNAL MODULE: external ["wp","widgets"]
 var external_wp_widgets_ = __webpack_require__("GLVC");
 
+// EXTERNAL MODULE: external ["wp","blocks"]
+var external_wp_blocks_ = __webpack_require__("HSyU");
+
 // EXTERNAL MODULE: external ["wp","components"]
 var external_wp_components_ = __webpack_require__("tI+e");
 
@@ -931,26 +934,48 @@ function useInserter(inserter) {
   }, [inserter])];
 }
 
-// EXTERNAL MODULE: external ["wp","blocks"]
-var external_wp_blocks_ = __webpack_require__("HSyU");
-
 // EXTERNAL MODULE: external ["wp","isShallowEqual"]
 var external_wp_isShallowEqual_ = __webpack_require__("rl8x");
 var external_wp_isShallowEqual_default = /*#__PURE__*/__webpack_require__.n(external_wp_isShallowEqual_);
 
-// CONCATENATED MODULE: ./node_modules/@wordpress/customize-widgets/build-module/components/sidebar-block-editor/use-sidebar-block-editor.js
-/**
- * External dependencies
- */
+// CONCATENATED MODULE: ./node_modules/@wordpress/customize-widgets/build-module/utils.js
+// @ts-check
 
 /**
  * WordPress dependencies
  */
 
 
+/**
+ * External dependencies
+ */
 
 
+/**
+ * Convert settingId to widgetId.
+ *
+ * @param {string} settingId The setting id.
+ * @return {string} The widget id.
+ */
 
+function settingIdToWidgetId(settingId) {
+  const matches = settingId.match(/^widget_(.+)(?:\[(\d+)\])$/);
+
+  if (matches) {
+    const idBase = matches[1];
+    const number = parseInt(matches[2], 10);
+    return `${idBase}-${number}`;
+  }
+
+  return settingId;
+}
+/**
+ * Transform a block to a customizable widget.
+ *
+ * @param {WPBlock} block          The block to be transformed from.
+ * @param {Object}  existingWidget The widget to be extended from.
+ * @return {Object} The transformed widget.
+ */
 
 function blockToWidget(block, existingWidget = null) {
   let widget;
@@ -999,6 +1024,16 @@ function blockToWidget(block, existingWidget = null) {
     ...widget
   };
 }
+/**
+ * Transform a widget to a block.
+ *
+ * @param {Object} widget          The widget to be transformed from.
+ * @param {string} widget.id       The widget id.
+ * @param {string} widget.idBase   The id base of the widget.
+ * @param {number} widget.number   The number/index of the widget.
+ * @param {Object} widget.instance The instance of the widget.
+ * @return {WPBlock} The transformed block.
+ */
 
 function widgetToBlock({
   id,
@@ -1037,6 +1072,24 @@ function widgetToBlock({
 
   return Object(external_wp_widgets_["addWidgetIdToBlock"])(block, id);
 }
+
+// CONCATENATED MODULE: ./node_modules/@wordpress/customize-widgets/build-module/components/sidebar-block-editor/use-sidebar-block-editor.js
+/**
+ * External dependencies
+ */
+
+/**
+ * WordPress dependencies
+ */
+
+
+
+
+/**
+ * Internal dependencies
+ */
+
+
 
 function widgetsToBlocks(widgets) {
   return widgets.map(widget => widgetToBlock(widget));
@@ -1116,27 +1169,6 @@ function useSidebarBlockEditor(sidebar) {
     });
   }, [sidebar]);
   return [blocks, onChangeBlocks, onChangeBlocks];
-}
-
-// CONCATENATED MODULE: ./node_modules/@wordpress/customize-widgets/build-module/utils.js
-// @ts-check
-
-/**
- * Convert settingId to widgetId.
- *
- * @param {string} settingId The setting id.
- * @return {string} The widget id.
- */
-function settingIdToWidgetId(settingId) {
-  const matches = settingId.match(/^widget_(.+)(?:\[(\d+)\])$/);
-
-  if (matches) {
-    const idBase = matches[1];
-    const number = parseInt(matches[2], 10);
-    return `${idBase}-${number}`;
-  }
-
-  return settingId;
 }
 
 // CONCATENATED MODULE: ./node_modules/@wordpress/customize-widgets/build-module/components/focus-control/index.js
@@ -1531,9 +1563,9 @@ function SidebarBlockEditor({
     isInserterOpened: isInserterOpened,
     setIsInserterOpened: setIsInserterOpened,
     isFixedToolbarActive: isFixedToolbarActive
-  }), Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockTools"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockSelectionClearer"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["WritingFlow"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["ObserveTyping"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockList"], {
+  }), Object(external_wp_element_["createElement"])(external_wp_blockEditor_["CopyHandler"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockTools"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockSelectionClearer"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["WritingFlow"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["ObserveTyping"], null, Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockList"], {
     renderAppender: BlockAppender
-  }))))), Object(external_wp_element_["createPortal"])( // This is a temporary hack to prevent button component inside <BlockInspector>
+  })))))), Object(external_wp_element_["createPortal"])( // This is a temporary hack to prevent button component inside <BlockInspector>
   // from submitting form when type="button" is not specified.
   Object(external_wp_element_["createElement"])("form", {
     onSubmit: event => event.preventDefault()
@@ -2349,25 +2381,52 @@ var external_wp_hooks_ = __webpack_require__("g56x");
  */
 
 
+
+
 const withMoveToSidebarToolbarItem = Object(external_wp_compose_["createHigherOrderComponent"])(BlockEdit => props => {
-  const widgetId = Object(external_wp_widgets_["getWidgetIdFromBlock"])(props);
+  let widgetId = Object(external_wp_widgets_["getWidgetIdFromBlock"])(props);
   const sidebarControls = useSidebarControls();
   const activeSidebarControl = useActiveSidebarControl();
   const hasMultipleSidebars = (sidebarControls === null || sidebarControls === void 0 ? void 0 : sidebarControls.length) > 1;
   const blockName = props.name;
+  const clientId = props.clientId;
   const canInsertBlockInSidebar = Object(external_wp_data_["useSelect"])(select => {
     // Use an empty string to represent the root block list, which
     // in the customizer editor represents a sidebar/widget area.
     return select(external_wp_blockEditor_["store"]).canInsertBlockType(blockName, '');
   }, [blockName]);
+  const block = Object(external_wp_data_["useSelect"])(select => select(external_wp_blockEditor_["store"]).getBlock(clientId), [clientId]);
+  const {
+    removeBlock
+  } = Object(external_wp_data_["useDispatch"])(external_wp_blockEditor_["store"]);
+  const [, focusWidget] = useFocusControl();
 
   function moveToSidebar(sidebarControlId) {
     const newSidebarControl = sidebarControls.find(sidebarControl => sidebarControl.id === sidebarControlId);
-    const oldSetting = activeSidebarControl.setting;
-    const newSetting = newSidebarControl.setting;
-    oldSetting(Object(external_lodash_["without"])(oldSetting(), widgetId));
-    newSetting([...newSetting(), widgetId]);
-    newSidebarControl.expand();
+
+    if (widgetId) {
+      /**
+       * If there's a widgetId, move it to the other sidebar.
+       */
+      const oldSetting = activeSidebarControl.setting;
+      const newSetting = newSidebarControl.setting;
+      oldSetting(Object(external_lodash_["without"])(oldSetting(), widgetId));
+      newSetting([...newSetting(), widgetId]);
+    } else {
+      /**
+       * If there isn't a widgetId, it's most likely a inner block.
+       * First, remove the block in the original sidebar,
+       * then, create a new widget in the new sidebar and get back its widgetId.
+       */
+      const sidebarAdapter = newSidebarControl.sidebarAdapter;
+      removeBlock(clientId);
+      const addedWidgetIds = sidebarAdapter.setWidgets([...sidebarAdapter.getWidgets(), blockToWidget(block)]); // The last non-null id is the added widget's id.
+
+      widgetId = addedWidgetIds.reverse().find(id => !!id);
+    } // Move focus to the moved widget and expand the sidebar.
+
+
+    focusWidget(widgetId);
   }
 
   return Object(external_wp_element_["createElement"])(external_wp_element_["Fragment"], null, Object(external_wp_element_["createElement"])(BlockEdit, props), hasMultipleSidebars && canInsertBlockInSidebar && Object(external_wp_element_["createElement"])(external_wp_blockEditor_["BlockControls"], null, Object(external_wp_element_["createElement"])(external_wp_widgets_["MoveToWidgetArea"], {
@@ -2435,6 +2494,7 @@ Object(external_wp_hooks_["addFilter"])('editor.BlockEdit', 'core/customize-widg
 
 
 
+
 /**
  * Internal dependencies
  */
@@ -2465,7 +2525,12 @@ function initialize(editorName, blockEditorSettings) {
 
   if (false) {}
 
-  Object(external_wp_widgets_["registerLegacyWidgetVariations"])(blockEditorSettings);
+  Object(external_wp_widgets_["registerLegacyWidgetVariations"])(blockEditorSettings); // As we are unregistering `core/freeform` to avoid the Classic block, we must
+  // replace it with something as the default freeform content handler. Failure to
+  // do this will result in errors in the default block parser.
+  // see: https://github.com/WordPress/gutenberg/issues/33097
+
+  Object(external_wp_blocks_["setFreeformContentHandlerName"])('core/html');
   const SidebarControl = getSidebarControl(blockEditorSettings);
   build_module_wp.customize.sectionConstructor.sidebar = getSidebarSection();
   build_module_wp.customize.controlConstructor.sidebar_block_editor = SidebarControl;
